@@ -45,6 +45,8 @@ route {
         group_membership_dn         "cn=admins,ou=groups,dc=example,dc=com"
         group_membership_attr       "member"
         use_ldaps
+        bind_user_dn                "cn=bind_user,ou=users,dc=example,dc=com"
+        bind_user_password          # Password associated with the bind user
         insecure_skip_verify        # Optional, only for self-signed certs
         pool_size                   5
         rate_limit_max_attempts     5
@@ -57,19 +59,21 @@ route {
 
 ### Directive Options
 
-| Option                    | Type     | Required | Description                                                                                   |
-|---------------------------|----------|----------|-----------------------------------------------------------------------------------------------|
-| `ldap_server`             | string   | Yes      | Host:port of your LDAP/LDAPS server. |
-| `base_dn`                 | string   | Yes      | Base DN for user search (e.g., `ou=users,dc=example,dc=com`). |
-| `user_attr`               | string   | Yes      | Attribute for username (e.g., `uid` or `sAMAccountName`). |
-| `group_membership_dn`     | string   | No       | DN of the group to require membership in. |
-| `group_membership_attr`   | string   | No       | Attribute for group membership (default: `member`). |
-| `use_ldaps`               | flag     | No       | Use LDAPS (LDAP over TLS). (default: `false`) |
-| `insecure_skip_verify`    | flag     | No       | Skip TLS verification (not recommended for production). (default: `false`) |
-| `pool_size`               | int      | No       | LDAP connection pool size (default: `5`)
-| `rate_limit_max_attempts`  | int      | No       | Rate limiting: max attempts (default: `5`) |
-| `rate_limit_window_seconds`  | int      | No       | Rate limiting: window in seconds (default: `60`) |
-| `rate_limit_lockout_seconds`  | int      | No       | Rate limiting: lockout in seconds (default: `300`) |
+| Option                       | Type   | Required | Description                                                                |
+|------------------------------|--------|----------|----------------------------------------------------------------------------|
+| `ldap_server`                | string | Yes      | Host:port of your LDAP/LDAPS server.                                       |
+| `base_dn`                    | string | Yes      | Base DN for user search (e.g., `ou=users,dc=example,dc=com`).              |
+| `user_attr`                  | string | Yes      | Attribute for username (e.g., `uid` or `sAMAccountName`).                  |
+| `group_membership_dn`        | string | No       | DN of the group to require membership in.                                  |
+| `group_membership_attr`      | string | No       | Attribute for group membership (default: `member`).                        |
+| `use_ldaps`                  | flag   | No       | Use LDAPS (LDAP over TLS). (default: `false`)                              |
+| `bind_user_dn`               | string | No       | DN of the bind user.                                                       |
+| `bind_user_password          | string | No       | Password of the bind user.                                                 |
+| `insecure_skip_verify`       | flag   | No       | Skip TLS verification (not recommended for production). (default: `false`) |
+| `pool_size`                  | int    | No       | LDAP connection pool size (default: `5`)                                   |
+| `rate_limit_max_attempts`    | int    | No       | Rate limiting: max attempts (default: `5`)                                 |
+| `rate_limit_window_seconds`  | int    | No       | Rate limiting: window in seconds (default: `60`)                           |
+| `rate_limit_lockout_seconds` | int    | No       | Rate limiting: lockout in seconds (default: `300`)                         |
 
 ### Variables
 After succesful authentication, the variable `ldap.basicauth.username` is set to the authenticated user. This variable can be used in, for example: paths when using webdav `/var/www/{ldap.basicauth.username}/data`.
