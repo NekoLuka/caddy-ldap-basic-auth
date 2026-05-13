@@ -1,4 +1,4 @@
-module github.com/bluewalk/caddy-ldap-basic-auth
+module github.com/nekoluka/caddy-ldap-basic-auth
 
 go 1.25.0
 
