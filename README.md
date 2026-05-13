@@ -68,7 +68,7 @@ route {
 | `group_membership_attr`      | string | No       | Attribute for group membership (default: `member`).                        |
 | `use_ldaps`                  | flag   | No       | Use LDAPS (LDAP over TLS). (default: `false`)                              |
 | `bind_user_dn`               | string | No       | DN of the bind user.                                                       |
-| `bind_user_password          | string | No       | Password of the bind user.                                                 |
+| `bind_user_password`         | string | No       | Password of the bind user.                                                 |
 | `insecure_skip_verify`       | flag   | No       | Skip TLS verification (not recommended for production). (default: `false`) |
 | `pool_size`                  | int    | No       | LDAP connection pool size (default: `5`)                                   |
 | `rate_limit_max_attempts`    | int    | No       | Rate limiting: max attempts (default: `5`)                                 |
