@@ -69,6 +69,16 @@ func (m *LDAPBasicAuth) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 					return d.ArgErr()
 				}
 				m.UseLDAPS = true
+			case "bind_user_dn":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+				m.BindUserDN = d.Val()
+			case "bind_user_password":
+				if !d.NextArg() {
+					return d.ArgErr()
+				}
+				m.BindUserPassword = d.Val()
 			case "insecure_skip_verify":
 				if d.NextArg() {
 					return d.ArgErr()
