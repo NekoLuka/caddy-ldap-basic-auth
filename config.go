@@ -1,31 +1,35 @@
 package ldapbasicauth
 
 import (
-    "fmt"
+	"fmt"
 	"sync"
 
-    "github.com/go-ldap/ldap/v3"
-    "github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
+	"github.com/go-ldap/ldap/v3"
 )
 
 type LDAPBasicAuth struct {
-    LDAPServer          		string	`json:"ldap_server"`
-    BaseDN              		string	`json:"base_dn"`
-    UserAttr            		string	`json:"user_attr"`
-    GroupMembershipDN   		string	`json:"group_membership_dn"`
-    GroupMembershipAttr 		string 	`json:"group_membership_attr,omitempty"`
-    UseLDAPS            		bool	`json:"use_ldaps,omitempty"`
-    InsecureSkipVerify  		bool	`json:"insecure_skip_verify,omitempty"`
-    PoolSize            		int		`json:"pool_size,omitempty"`
+	LDAPServer          string `json:"ldap_server"`
+	BaseDN              string `json:"base_dn"`
+	UserAttr            string `json:"user_attr"`
+	GroupMembershipDN   string `json:"group_membership_dn"`
+	GroupMembershipAttr string `json:"group_membership_attr,omitempty"`
+	UseLDAPS            bool   `json:"use_ldaps,omitempty"`
+	InsecureSkipVerify  bool   `json:"insecure_skip_verify,omitempty"`
+	PoolSize            int    `json:"pool_size,omitempty"`
 
-    RateLimitMaxAttempts		int		`json:"rate_limit_max_attempts,omitempty"`
-    RateLimitWindowSeconds		int		`json:"rate_limit_window_seconds,omitempty"`
-    RateLimitLockoutSeconds		int		`json:"rate_limit_lockout_seconds,omitempty"`
+	BindUserDN       string `json:"bind_user_dn,omitempty"`
+	BindUserPassword string `json:"bind_user_password,omitempty"`
 
-    poolOnce					sync.Once
-    pool						chan *ldap.Conn
+	RateLimitMaxAttempts    int `json:"rate_limit_max_attempts,omitempty"`
+	RateLimitWindowSeconds  int `json:"rate_limit_window_seconds,omitempty"`
+	RateLimitLockoutSeconds int `json:"rate_limit_lockout_seconds,omitempty"`
 
-    anonymousBindSupported		bool
+	poolOnce sync.Once
+	pool     chan *ldap.Conn
+
+	anonymousBindSupported     bool
+	authenticatedBindSupported bool
 }
 
 func (m *LDAPBasicAuth) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {

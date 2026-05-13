@@ -1,18 +1,22 @@
 package ldapbasicauth
 
 import (
-    "crypto/tls"
-    "errors"
-    "strings"
+	"crypto/tls"
+	"errors"
+	"strings"
 
-    "github.com/caddyserver/caddy/v2"
-    "github.com/go-ldap/ldap/v3"
-    "go.uber.org/zap"
+	"github.com/caddyserver/caddy/v2"
+	"github.com/go-ldap/ldap/v3"
+	"go.uber.org/zap"
 )
 
 func (m *LDAPBasicAuth) initPool() {
 	m.poolOnce.Do(func() {
 		m.pool = make(chan *ldap.Conn, m.PoolSize)
+		m.authenticatedBindSupported = m.supportsAuthenticatedBind()
+		if !m.authenticatedBindSupported {
+			caddy.Log().Named("ldap_basic_auth").Warn("Bind DN credentials are invalid/omitted; falling back on anonymous bind")
+		}
 		m.anonymousBindSupported = m.supportsAnonymousBind()
 		if !m.anonymousBindSupported {
 			caddy.Log().Named("ldap_basic_auth").Warn("LDAP server does not support anonymous/unauthenticated bind; connection pooling is disabled")
@@ -40,7 +44,7 @@ func (m *LDAPBasicAuth) getConn() (*ldap.Conn, error) {
 		case conn := <-m.pool:
 			logger.Debug("Got connection from pool, performing health check")
 			// Health check
-			if err := conn.Bind("", ""); err != nil && !errors.Is(err, ldap.NewError(ldap.LDAPResultInvalidCredentials, nil)) {
+			if err := conn.Bind(m.BindUserDN, m.BindUserPassword); err != nil && !errors.Is(err, ldap.NewError(ldap.LDAPResultInvalidCredentials, nil)) {
 				logger.Debug("Connection from pool failed health check, closing", zap.Error(err))
 				conn.Close()
 				continue
@@ -58,6 +62,12 @@ func (m *LDAPBasicAuth) putConn(conn *ldap.Conn) {
 	logger := caddy.Log().Named("ldap_basic_auth")
 	if !m.anonymousBindSupported {
 		logger.Debug("Anonymous bind not supported, closing connection after use")
+		conn.Close()
+		return
+	}
+
+	if err := conn.Bind(m.BindUserDN, m.BindUserPassword); err != nil {
+		logger.Debug("Failed to authenticated-bind before returning to pool, closing connection", zap.Error(err))
 		conn.Close()
 		return
 	}
@@ -84,5 +94,15 @@ func (m *LDAPBasicAuth) supportsAnonymousBind() bool {
 	}
 	defer conn.Close()
 	err = conn.Bind("", "")
+	return err == nil
+}
+
+func (m *LDAPBasicAuth) supportsAuthenticatedBind() bool {
+	conn, err := m.newConn()
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+	err = conn.Bind(m.BindUserDN, m.BindUserPassword)
 	return err == nil
 }
